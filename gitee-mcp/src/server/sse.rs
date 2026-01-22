@@ -90,6 +90,11 @@ async fn message_handler(
         &state.disabled_toolsets,
     ).await;
 
+    // Don't send response for notifications
+    if response.get("ignore").is_some() {
+        return axum::http::StatusCode::NO_CONTENT;
+    }
+
     // 获取对应的 SSE 发送端
     let sessions = state.sessions.lock().await;
     if let Some(tx) = sessions.get(session_id) {

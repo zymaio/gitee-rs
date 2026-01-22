@@ -1,0 +1,4 @@
+{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": 1}
+{"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}}
+{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 2}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_repo_issues", "arguments": {"owner": "fourthz", "repo": "gitee-tools-test"}}, "id": 3}

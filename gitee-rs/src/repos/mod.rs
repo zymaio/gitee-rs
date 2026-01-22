@@ -89,6 +89,37 @@ impl GiteeClient {
         Ok(repo)
     }
 
+    /// Create a new enterprise repository
+    pub async fn create_enterprise_repo(&self, enterprise: &str, name: &str, description: Option<&str>, private: bool) -> Result<Repository, GiteeError> {
+        let url = format!("{}/enterprises/{}/repos", self.base_url(), enterprise);
+
+        let mut payload = std::collections::HashMap::new();
+        payload.insert("name", name);
+        payload.insert("private", if private { "true" } else { "false" });
+        if let Some(desc) = description {
+            payload.insert("description", desc);
+        }
+        payload.insert("auto_init", "true");
+
+        let response = self
+            .client()
+            .request(Method::POST, &url)
+            .header("Authorization", self.auth_header())
+            .json(&payload)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to create enterprise repository: {}",
+                response.status()
+            )));
+        }
+
+        let repo: Repository = response.json().await?;
+        Ok(repo)
+    }
+
     /// List user repositories
     pub async fn list_user_repos(&self) -> Result<Vec<Repository>, GiteeError> {
         let url = format!("{}/user/repos", self.base_url());

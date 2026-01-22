@@ -40,8 +40,11 @@ pub async fn run_stdio_server(
             &disabled_toolsets,
         ).await;
 
-        println!("{}", serde_json::to_string(&response)?);
-        io::stdout().flush()?;
+        // Don't send response for notifications (like initialized)
+        if response.get("ignore").is_none() {
+            println!("{}", serde_json::to_string(&response)?);
+            io::stdout().flush()?;
+        }
     }
 
     Ok(())

@@ -83,20 +83,36 @@ impl GiteeClient {
             .send()
             .await?;
 
-        if !response.status().is_success() {
-            return Err(GiteeError::ApiError(format!(
-                "Failed to search users: {}",
-                response.status()
-            )));
+                if !response.status().is_success() {
+
+                    return Err(GiteeError::ApiError(format!(
+
+                        "Failed to search users: {}",
+
+                        response.status()
+
+                    )));
+
+                }
+
+        
+
+                #[derive(Deserialize)]
+
+                struct SearchResult {
+
+                    pub items: Vec<SearchUserResult>,
+
+                }
+
+        
+
+                let search_result: SearchResult = response.json().await?;
+
+                Ok(search_result.items)
+
+            }
+
         }
 
-        // Gitee API returns results in a "items" field
-        #[derive(Deserialize)]
-        struct SearchResult {
-            items: Vec<SearchUserResult>,
-        }
-
-        let search_result: SearchResult = response.json().await?;
-        Ok(search_result.items)
-    }
-}
+        

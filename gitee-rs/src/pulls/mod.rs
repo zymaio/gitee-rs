@@ -6,15 +6,16 @@ pub use models::*;
 
 impl GiteeClient {
     /// List all pull requests for a repository
-    pub async fn list_pulls(&self, owner: &str, repo: &str) -> Result<Vec<PullRequest>, GiteeError> {
+    pub async fn list_pulls(&self, owner: &str, repo: &str, options: Option<PullListOptions>) -> Result<Vec<PullRequest>, GiteeError> {
         let url = format!("{}/repos/{}/{}/pulls", self.base_url(), owner, repo);
+        let mut request = self.client().request(Method::GET, &url)
+            .header("Authorization", self.auth_header());
+        
+        if let Some(opts) = options {
+            request = request.query(&opts);
+        }
 
-        let response = self
-            .client()
-            .request(Method::GET, &url)
-            .header("Authorization", self.auth_header())
-            .send()
-            .await?;
+        let response = request.send().await?;
 
         if !response.status().is_success() {
             return Err(GiteeError::ApiError(format!(

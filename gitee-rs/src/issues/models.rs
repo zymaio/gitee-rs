@@ -45,6 +45,18 @@ pub struct Comment {
     pub body: String,
     #[serde(default)]
     pub user: Option<User>,
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct IssueListOptions {
+    pub state: Option<String>,
+    pub labels: Option<String>,
+    pub sort: Option<String>,
+    pub direction: Option<String>,
+    pub since: Option<String>,
+    pub page: Option<i32>,
+    pub per_page: Option<i32>,
+    pub q: Option<String>,
 }

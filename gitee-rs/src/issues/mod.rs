@@ -6,18 +6,43 @@ pub use models::*;
 
 impl GiteeClient {
     /// List all issues
-    pub async fn list_issues(&self) -> Result<Vec<Issue>, GiteeError> {
+    pub async fn list_issues(&self, options: Option<IssueListOptions>) -> Result<Vec<Issue>, GiteeError> {
         let url = format!("{}/issues", self.base_url());
-        let response = self
-            .client()
-            .request(Method::GET, &url)
-            .header("Authorization", self.auth_header())
-            .send()
-            .await?;
+        let mut request = self.client().request(Method::GET, &url)
+            .header("Authorization", self.auth_header());
+        
+        if let Some(opts) = options {
+            request = request.query(&opts);
+        }
+
+        let response = request.send().await?;
 
         if !response.status().is_success() {
             return Err(GiteeError::ApiError(format!(
                 "Failed to list issues: {}",
+                response.status()
+            )));
+        }
+
+        let issues: Vec<Issue> = response.json().await?;
+        Ok(issues)
+    }
+
+    /// List repository issues
+    pub async fn list_repo_issues(&self, owner: &str, repo: &str, options: Option<IssueListOptions>) -> Result<Vec<Issue>, GiteeError> {
+        let url = format!("{}/repos/{}/{}/issues", self.base_url(), owner, repo);
+        let mut request = self.client().request(Method::GET, &url)
+            .header("Authorization", self.auth_header());
+        
+        if let Some(opts) = options {
+            request = request.query(&opts);
+        }
+
+        let response = request.send().await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to list repo issues: {}",
                 response.status()
             )));
         }

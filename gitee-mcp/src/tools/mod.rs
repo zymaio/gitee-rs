@@ -19,10 +19,27 @@ pub async fn handle_rpc_request(
     enabled_toolsets: &Option<String>,
     disabled_toolsets: &Option<String>,
 ) -> Value {
-    let id = input.get("id").and_then(|v| v.as_u64()).map(|v| v as u32);
+    let jsonrpc = input.get("jsonrpc").and_then(|v| v.as_str()).unwrap_or("2.0");
+    let id = input.get("id").cloned();
     let method_val = input.get("method").and_then(|v| v.as_str());
+    let is_notification = id.is_none();
 
-    match method_val {
+    let result_value = match method_val {
+        Some("initialize") => {
+            json!({
+                "protocolVersion": "2024-11-05",
+                "capabilities": {
+                    "tools": {}
+                },
+                "serverInfo": {
+                    "name": "gitee-rs",
+                    "version": "0.9.1"
+                }
+            })
+        }
+        Some("notifications/initialized") => {
+            return json!({ "ignore": true });
+        }
         Some("tools/list") => {
             let mut tools = get_tools_list();
             
@@ -34,29 +51,18 @@ pub async fn handle_rpc_request(
                 tools.retain(|t| !disabled_list.contains(&t.name.as_str()));
             }
 
-            json!({
-                "result": { "tools": tools },
-                "error": null,
-                "id": id,
-            })
+            json!({ "tools": tools })
         }
         Some("ping") => {
-            json!({
-                "result": { "success": true },
-                "error": null,
-                "id": id,
-            })
+            json!({ "success": true })
         }
         Some("endpoints/list") => {
             json!({
-                "result": {
-                    "endpoints": ["tools/list", "call/tool", "ping", "endpoints/list"]
-                },
-                "error": null,
-                "id": id,
+                "endpoints": ["tools/list", "tools/call", "ping", "endpoints/list"]
             })
         }
-        Some("call/tool") => {
+        // 关键：必须是 tools/call
+        Some("tools/call") => {
             let params = input.get("params").cloned().unwrap_or(json!({}));
             let tool_name = params.get("name").and_then(|v| v.as_str()).unwrap_or("");
             let arguments_default = json!({});
@@ -72,31 +78,42 @@ pub async fn handle_rpc_request(
 
             if !is_enabled {
                 return json!({
-                    "result": null,
-                    "error": { "code": -1, "message": format!("Tool '{}' is disabled", tool_name) },
+                    "jsonrpc": jsonrpc,
                     "id": id,
+                    "error": { "code": -1, "message": format!("Tool '{}' is disabled", tool_name) }
                 });
             }
 
             match dispatch_tool_call(client, tool_name, arguments).await {
-                Ok(result) => {
-                    json!({ "result": result, "error": null, "id": id })
-                }
+                Ok(result) => result,
                 Err(e) => {
-                    json!({
-                        "result": null,
-                        "error": { "code": -1, "message": e },
+                    return json!({
+                        "jsonrpc": jsonrpc,
                         "id": id,
-                    })
+                        "error": { "code": -1, "message": e }
+                    });
                 }
             }
         }
         _ => {
-            json!({
-                "result": null,
-                "error": { "code": -32601, "message": "Method not found" },
+            if is_notification {
+                return json!({ "ignore": true });
+            }
+            return json!({
+                "jsonrpc": jsonrpc,
                 "id": id,
-            })
+                "error": { "code": -32601, "message": format!("Method not found: {:?}", method_val) }
+            });
         }
+    };
+
+    if is_notification {
+        json!({ "ignore": true })
+    } else {
+        json!({
+            "jsonrpc": jsonrpc,
+            "id": id,
+            "result": result_value
+        })
     }
 }

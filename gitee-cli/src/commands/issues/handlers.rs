@@ -6,7 +6,7 @@ pub async fn handle_issues(client: &GiteeClient, cmd: &IssueCommands) -> Result<
     match cmd {
         IssueCommands::List => {
             println!("Fetching issues...");
-            match client.list_issues().await {
+            match client.list_issues(None).await {
                 Ok(issues) => {
                     if issues.is_empty() {
                         println!("No issues found.");
@@ -102,13 +102,10 @@ pub async fn handle_issues_ext(client: &GiteeClient, cmd: &IssueCommandsExtended
 pub fn print_issue(issue: &Issue) {
     println!("#{}: {} [{}]", issue.number, issue.title, issue.state);
     if let Some(body) = &issue.body {
-        if body.len() > 100 {
-            println!("  {}", &body[..100.min(body.len())]);
-            if body.len() > 100 {
-                println!("  ...");
-            }
-        } else {
-            println!("  {}", body);
+        let truncated: String = body.chars().take(100).collect();
+        println!("  {}", truncated);
+        if body.chars().count() > 100 {
+            println!("  ...");
         }
     }
     println!("  URL: {}", issue.html_url);

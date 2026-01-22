@@ -58,3 +58,14 @@ pub struct FileDiff {
     #[serde(rename = "raw_url")]
     pub raw_url: String,
 }
+
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct PullListOptions {
+    pub state: Option<String>,
+    pub head: Option<String>,
+    pub base: Option<String>,
+    pub sort: Option<String>,
+    pub direction: Option<String>,
+    pub page: Option<i32>,
+    pub per_page: Option<i32>,
+}

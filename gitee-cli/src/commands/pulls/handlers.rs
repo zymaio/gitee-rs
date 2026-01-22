@@ -6,7 +6,7 @@ pub async fn handle_pulls(client: &GiteeClient, cmd: &PullRequestCommands) -> Re
     match cmd {
         PullRequestCommands::List { owner, repo } => {
             println!("Fetching pull requests for {}/{}...", owner, repo);
-            match client.list_pulls(owner, repo).await {
+            match client.list_pulls(owner, repo, None).await {
                 Ok(pulls) => {
                     if pulls.is_empty() {
                         println!("No pull requests found.");
@@ -127,13 +127,10 @@ pub async fn handle_pulls_ext(client: &GiteeClient, cmd: &PullRequestCommandsExt
 pub fn print_pull_request(pr: &PullRequest) {
     println!("#{}: {} [{}]", pr.number, pr.title, pr.state);
     if let Some(body) = &pr.body {
-        if body.len() > 100 {
-            println!("  {}", &body[..100.min(body.len())]);
-            if body.len() > 100 {
-                println!("  ...");
-            }
-        } else {
-            println!("  {}", body);
+        let truncated: String = body.chars().take(100).collect();
+        println!("  {}", truncated);
+        if body.chars().count() > 100 {
+            println!("  ...");
         }
     }
     println!("  URL: {}", pr.html_url);

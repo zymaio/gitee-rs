@@ -100,13 +100,7 @@ impl GiteeClient {
             )));
         }
 
-        // Gitee API returns results in a "items" field
-        #[derive(serde::Deserialize)]
-        struct SearchRepoResult {
-            items: Vec<Repository>,
-        }
-
-        let search_result: SearchRepoResult = response.json().await?;
-        Ok(search_result.items)
+        let repos: Vec<Repository> = response.json().await?;
+        Ok(repos)
     }
 }

@@ -34,6 +34,18 @@ pub async fn handle_create_org_repo(client: &GiteeClient, args: &Value) -> Resul
     }
 }
 
+pub async fn handle_create_enterprise_repo(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let enterprise = args.get("enterprise").and_then(|v| v.as_str()).ok_or("Missing 'enterprise' parameter")?;
+    let name = args.get("name").and_then(|v| v.as_str()).ok_or("Missing 'name' parameter")?;
+    let description = args.get("description").and_then(|v| v.as_str());
+    let private = args.get("private").and_then(|v| v.as_bool()).unwrap_or(true);
+
+    match client.create_enterprise_repo(enterprise, name, description, private).await {
+        Ok(repo) => Ok(json!({ "repository": repo })),
+        Err(e) => Err(format!("Failed to create enterprise repository: {}", e)),
+    }
+}
+
 pub async fn handle_list_user_repos(client: &GiteeClient) -> Result<Value, String> {
     match client.list_user_repos().await {
         Ok(repos) => Ok(json!({ "repositories": repos })),

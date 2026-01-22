@@ -1,8 +1,23 @@
 use gitee_rs::GiteeClient;
+use gitee_rs::issues::IssueListOptions;
 use serde_json::{json, Value};
 
-pub async fn handle_list_issues(client: &GiteeClient) -> Result<Value, String> {
-    match client.list_issues().await {
+pub async fn handle_list_issues(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
+    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
+
+    let options = IssueListOptions {
+        state: args.get("state").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        labels: args.get("labels").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        sort: args.get("sort").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        direction: args.get("direction").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        since: args.get("since").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        page: args.get("page").and_then(|v| v.as_i64()).map(|v| v as i32),
+        per_page: args.get("per_page").and_then(|v| v.as_i64()).map(|v| v as i32),
+        q: args.get("q").and_then(|v| v.as_str()).map(|s| s.to_string()),
+    };
+
+    match client.list_repo_issues(owner, repo, Some(options)).await {
         Ok(issues) => Ok(json!({ "issues": issues })),
         Err(e) => Err(format!("Failed to list issues: {}", e)),
     }

@@ -1,13 +1,35 @@
 use gitee_rs::GiteeClient;
+use gitee_rs::pulls::PullListOptions;
 use serde_json::{json, Value};
 
 pub async fn handle_list_pulls(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
     let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
 
-    match client.list_pulls(owner, repo).await {
+    let options = PullListOptions {
+        state: args.get("state").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        head: args.get("head").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        base: args.get("base").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        sort: args.get("sort").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        direction: args.get("direction").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        page: args.get("page").and_then(|v| v.as_i64()).map(|v| v as i32),
+        per_page: args.get("per_page").and_then(|v| v.as_i64()).map(|v| v as i32),
+    };
+
+    match client.list_pulls(owner, repo, Some(options)).await {
         Ok(pulls) => Ok(json!({ "pull_requests": pulls })),
         Err(e) => Err(format!("Failed to list pull requests: {}", e)),
+    }
+}
+
+pub async fn handle_get_pull_detail(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
+    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
+    let number = args.get("number").and_then(|v| v.as_str()).ok_or("Missing 'number' parameter")?;
+
+    match client.get_pull_detail(owner, repo, number).await {
+        Ok(pull) => Ok(json!({ "pull_request": pull })),
+        Err(e) => Err(format!("Failed to get pull request detail: {}", e)),
     }
 }
 
@@ -25,39 +47,6 @@ pub async fn handle_create_pull(client: &GiteeClient, args: &Value) -> Result<Va
     }
 }
 
-pub async fn handle_close_pull(client: &GiteeClient, args: &Value) -> Result<Value, String> {
-    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
-    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
-    let number = args.get("number").and_then(|v| v.as_str()).ok_or("Missing 'number' parameter")?;
-
-    match client.close_pull(owner, repo, number).await {
-        Ok(pull) => Ok(json!({ "pull_request": pull })),
-        Err(e) => Err(format!("Failed to close pull request: {}", e)),
-    }
-}
-
-pub async fn handle_merge_pull(client: &GiteeClient, args: &Value) -> Result<Value, String> {
-    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
-    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
-    let number = args.get("number").and_then(|v| v.as_str()).ok_or("Missing 'number' parameter")?;
-
-    match client.merge_pull(owner, repo, number).await {
-        Ok(pull) => Ok(json!({ "pull_request": pull })),
-        Err(e) => Err(format!("Failed to merge pull request: {}", e)),
-    }
-}
-
-pub async fn handle_get_pull_detail(client: &GiteeClient, args: &Value) -> Result<Value, String> {
-    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
-    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
-    let number = args.get("number").and_then(|v| v.as_str()).ok_or("Missing 'number' parameter")?;
-
-    match client.get_pull_detail(owner, repo, number).await {
-        Ok(pull) => Ok(json!({ "pull_request": pull })),
-        Err(e) => Err(format!("Failed to get pull request detail: {}", e)),
-    }
-}
-
 pub async fn handle_update_pull(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
     let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
@@ -69,6 +58,17 @@ pub async fn handle_update_pull(client: &GiteeClient, args: &Value) -> Result<Va
     match client.update_pull(owner, repo, number, title, body, state).await {
         Ok(pull) => Ok(json!({ "pull_request": pull })),
         Err(e) => Err(format!("Failed to update pull request: {}", e)),
+    }
+}
+
+pub async fn handle_merge_pull(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
+    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
+    let number = args.get("number").and_then(|v| v.as_str()).ok_or("Missing 'number' parameter")?;
+
+    match client.merge_pull(owner, repo, number).await {
+        Ok(pull) => Ok(json!({ "pull_request": pull })),
+        Err(e) => Err(format!("Failed to merge pull request: {}", e)),
     }
 }
 

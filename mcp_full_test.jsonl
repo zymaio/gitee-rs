@@ -1,0 +1,11 @@
+{"jsonrpc": "2.0", "method": "initialize", "params": {}, "id": "init"}
+{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": "list_tools"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "get_user_info", "arguments": {}}, "id": "u1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "search_users", "arguments": {"q": "fourthz"}}, "id": "u2"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_user_repos", "arguments": {}}, "id": "r1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "get_repo", "arguments": {"owner": "fourthz", "repo": "gitee-tools-test"}}, "id": "r2"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_repo_issues", "arguments": {"owner": "fourthz", "repo": "gitee-tools-test"}}, "id": "i1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_repo_pulls", "arguments": {"owner": "fourthz", "repo": "gitee-tools-test"}}, "id": "p1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_labels", "arguments": {"owner": "fourthz", "repo": "gitee-tools-test"}}, "id": "l1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_user_notifications", "arguments": {}}, "id": "n1"}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "search_open_source_repositories", "arguments": {"q": "rust"}}, "id": "r3"}
