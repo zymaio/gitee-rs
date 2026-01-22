@@ -19,8 +19,7 @@ pub enum LabelCommands {
         repo: String,
         /// Name of the label
         name: String,
-        /// Color of the label (without #)
-        #[arg(long, default_value = "ffffff")]
+        /// Color of the label (without #, e.g. ff0000)
         color: String,
         /// Description of the label
         #[arg(short, long)]

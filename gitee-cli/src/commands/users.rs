@@ -4,10 +4,10 @@ use anyhow::Result;
 
 #[derive(Subcommand)]
 pub enum UserCommands {
-    /// Get user information
+    /// Get user information (default: current authenticated user)
     Info {
-        /// Username to get info for
-        username: String,
+        /// Username to fetch (optional)
+        username: Option<String>,
     },
     /// Search users
     Search {
@@ -19,17 +19,24 @@ pub enum UserCommands {
 pub async fn handle_users(client: &GiteeClient, cmd: &UserCommands) -> Result<()> {
     match cmd {
         UserCommands::Info { username } => {
-            println!("Fetching user info for {}...", username);
-            match client.get_user_info(username).await {
-                Ok(user) => {
-                    println!("User: {} ({})", user.name.as_deref().unwrap_or("N/A"), user.login);
-                    println!("Email: {}", user.email.as_deref().unwrap_or("N/A"));
-                    println!("Location: {}", user.location.as_deref().unwrap_or("N/A"));
-                    println!("Public repos: {}", user.public_repos);
-                    println!("Followers: {}", user.followers);
-                    println!("Following: {}", user.following);
+            if let Some(uname) = username {
+                println!("Fetching info for user '{}'...", uname);
+                match client.get_user_info(uname).await {
+                    Ok(user) => {
+                        println!("User: {} ({})", user.name.as_deref().unwrap_or("N/A"), user.login);
+                        println!("Repos: {}, Followers: {}", user.public_repos, user.followers);
+                    }
+                    Err(e) => eprintln!("Error fetching user info: {}", e),
                 }
-                Err(e) => eprintln!("Error fetching user info: {}", e),
+            } else {
+                println!("Fetching your profile...");
+                match client.get_authenticated_user().await {
+                    Ok(user) => {
+                        println!("Authenticated as: {} ({})", user.name.as_deref().unwrap_or("N/A"), user.login);
+                        println!("Repos: {}, Followers: {}", user.public_repos, user.followers);
+                    }
+                    Err(e) => eprintln!("Error fetching authenticated user: {}", e),
+                }
             }
         }
         UserCommands::Search { query } => {
@@ -40,8 +47,7 @@ pub async fn handle_users(client: &GiteeClient, cmd: &UserCommands) -> Result<()
                         println!("No users found.");
                     } else {
                         for user in users {
-                            let name_display = if let Some(ref n) = user.name { n.as_str() } else { "N/A" };
-                            println!("User: {} ({})", name_display, user.login);
+                            println!("User: {} ({})", user.name.as_deref().unwrap_or("N/A"), user.login);
                             println!("  Repos: {}, Followers: {}, Score: {}", user.public_repos, user.followers, user.score);
                         }
                     }

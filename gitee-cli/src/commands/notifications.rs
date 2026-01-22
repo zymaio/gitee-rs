@@ -15,14 +15,18 @@ pub async fn handle_notifications(client: &GiteeClient, cmd: &NotificationComman
             match client.list_user_notifications().await {
                 Ok(notifications) => {
                     if notifications.is_empty() {
-                        println!("No notifications found.");
+                        println!("No unread notifications.");
                     } else {
                         for notification in notifications {
-                            println!("Notification: {}", notification.title);
-                            println!("  Reason: {}, Updated: {}", notification.reason, notification.updated_at);
-                            if let Some(repo) = &notification.repository {
-                                println!("  Repository: {}", repo.full_name);
+                            println!("Notification: {}", notification.content.as_deref().unwrap_or("No content"));
+                            println!("  Updated: {}", notification.updated_at);
+                            if let Some(url) = &notification.html_url {
+                                println!("  URL: {}", url);
                             }
+                            if let Some(repo) = notification.repository {
+                                println!("  Repo: {}", repo.full_name);
+                            }
+                            println!();
                         }
                     }
                 }

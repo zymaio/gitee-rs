@@ -22,7 +22,7 @@ pub use crate::issues::{Issue, Milestone, Comment as IssueComment};
 pub use crate::pulls::{PullRequest, BranchRef, FileDiff, Comment as PullComment};
 pub use crate::labels::Label;
 pub use crate::files::{FileContent, RepoFile};
-pub use crate::notifications::{Notification, NotificationSubject};
+pub use crate::notifications::{Notification};
 pub use crate::releases::{Release};
 
 /// Gitee API Client

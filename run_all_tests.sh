@@ -1,56 +1,65 @@
 #!/bin/bash
+export GITEE_TOKEN=b67fb5f1bd50b9d16abcd417bd5dfbf4
+export OWNER=fourthz
+export REPO=gitee-tools-test
+export CLI="cargo run -q -p gitee-cli --"
 
-# Gitee Tools - 统一测试管理脚本
+report="TEST_REPORT.md"
+echo "# Gitee CLI All-In-One Test Report" > $report
+echo "Date: $(date)" >> $report
+echo "| Category | Command | Status | Details |" >> $report
+echo "|----------|---------|--------|---------|" >> $report
 
-echo "==================================="
-echo "Gitee Tools - 统一测试管理"
-echo "==================================="
-echo ""
-echo "请选择要运行的测试类型："
-echo ""
-echo "1) 单元测试 (Unit Tests) - 测试核心功能和数据结构"
-echo "2) 集成测试 (Integration Tests) - 端到端功能测试"
-echo "3) 完整测试套件 (Complete Test Suite) - 运行所有测试"
-echo "4) 退出"
-echo ""
+run_test() {
+    category=$1
+    cmd_name=$2
+    full_cmd=$3
+    
+    echo "Testing $category: $cmd_name..."
+    # 使用 eval 确保引号被正确解析
+    output=$(eval "$full_cmd" 2>&1)
+    if [ $? -eq 0 ]; then
+        status="✅ PASS"
+        detail=$(echo "$output" | head -n 1 | tr -d '|')
+    else
+        status="❌ FAIL"
+        detail=$(echo "$output" | head -n 1 | tr -d '|')
+    fi
+    echo "| $category | $cmd_name | $status | $detail |" >> $report
+}
 
-read -p "请输入选项 (1-4): " choice
+# --- Repos ---
+run_test "Repos" "list" "$CLI repo list"
+run_test "Repos" "info" "$CLI repo info $OWNER $REPO"
+run_test "Repos" "fork" "$CLI repo-ext fork $OWNER $REPO"
 
-case $choice in
-    1)
-        echo ""
-        echo "运行单元测试..."
-        echo "=================="
-        ./run_tests.sh
-        ;;
-    2)
-        echo ""
-        echo "运行集成测试..."
-        echo "=================="
-        ./run_integration_test.sh
-        ;;
-    3)
-        echo ""
-        echo "运行完整测试套件..."
-        echo "=================="
-        echo "首先运行单元测试..."
-        ./run_tests.sh
-        echo ""
-        echo "然后运行集成测试..."
-        ./run_integration_test.sh
-        ;;
-    4)
-        echo "退出测试管理。"
-        exit 0
-        ;;
-    *)
-        echo "无效选项: $choice"
-        echo "退出。"
-        exit 1
-        ;;
-esac
+# --- Issues ---
+run_test "Issues" "list" "$CLI issues list"
+run_test "Issues" "create" "$CLI issues create $OWNER $REPO 'Report-Test' --body 'Generated'"
+run_test "Issues" "detail" "$CLI issues-ext detail $OWNER $REPO IDL5EU"
+run_test "Issues" "comment" "$CLI issues-ext comment $OWNER $REPO IDL5EU 'Test-Comment-$(date +%s)'"
 
-echo ""
-echo "==================================="
-echo "所有选定的测试已完成！"
-echo "==================================="
+# --- Pull Requests ---
+run_test "PRs" "list" "$CLI pr list $OWNER $REPO"
+
+# --- Labels ---
+run_test "Labels" "list" "$CLI labels list $OWNER $REPO"
+run_test "Labels" "create" "$CLI labels create $OWNER $REPO 'tmp-tag' 'ff0000'"
+run_test "Labels" "update" "$CLI labels update $OWNER $REPO 'tmp-tag' --new-name 'tmp-tag-fixed'"
+run_test "Labels" "delete" "$CLI labels delete $OWNER $REPO 'tmp-tag-fixed'"
+
+# --- Users ---
+run_test "Users" "info (self)" "$CLI user info"
+run_test "Users" "info (other)" "$CLI user info fourthz"
+run_test "Users" "search" "$CLI user search fourthz"
+
+# --- Files ---
+run_test "Files" "list" "$CLI files list $OWNER $REPO"
+run_test "Files" "get" "$CLI files get $OWNER $REPO README.md"
+run_test "Files" "search" "$CLI files search 'Gitee' --owner $OWNER"
+
+# --- Releases & Notifications ---
+run_test "Releases" "list" "$CLI releases list $OWNER $REPO"
+run_test "Notifications" "list" "$CLI notifications list"
+
+echo "Testing complete. Report generated at $report"

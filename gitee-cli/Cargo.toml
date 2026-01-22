@@ -1,6 +1,6 @@
 [package]
 name = "gitee-cli"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2021"
 authors = ["fourthz"]
 description = "A powerful command-line interface for Gitee."
@@ -16,7 +16,7 @@ name = "gitee"
 path = "src/main.rs"
 
 [dependencies]
-gitee-rs = { version = "0.9.0", path = "../gitee-rs" }
+gitee-rs = { version = "0.9.1", path = "../gitee-rs" }
 reqwest = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }
