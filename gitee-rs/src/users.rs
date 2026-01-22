@@ -1,6 +1,7 @@
 use crate::{error::GiteeError, GiteeClient, utils::deserialize_string_or_int};
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct User {
@@ -49,7 +50,28 @@ pub struct SearchUserResult {
 }
 
 impl GiteeClient {
-    /// Get user information
+    /// Get authenticated user information (current user)
+    pub async fn get_authenticated_user(&self) -> Result<User, GiteeError> {
+        let url = format!("{}/user", self.base_url());
+        let response = self
+            .client()
+            .request(Method::GET, &url)
+            .header("Authorization", self.auth_header())
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to get authenticated user info: {}",
+                response.status()
+            )));
+        }
+
+        let user: User = response.json().await?;
+        Ok(user)
+    }
+
+    /// Get user information by username
     pub async fn get_user_info(&self, username: &str) -> Result<User, GiteeError> {
         let url = format!("{}/users/{}", self.base_url(), username);
         let response = self
@@ -83,36 +105,72 @@ impl GiteeClient {
             .send()
             .await?;
 
-                if !response.status().is_success() {
+                        if !response.status().is_success() {
 
-                    return Err(GiteeError::ApiError(format!(
+                            return Err(GiteeError::ApiError(format!(
 
-                        "Failed to search users: {}",
+                                "Failed to search users: {}",
 
-                        response.status()
+                                response.status()
 
-                    )));
+                            )));
+
+                        }
+
+                
+
+                        let body = response.text().await?;
+
+                        let v: Value = serde_json::from_str(&body)?;
+
+                        
+
+                                if let Some(items) = v.get("items") {
+
+                        
+
+                                    let users: Vec<SearchUserResult> = serde_json::from_value(items.clone())?;
+
+                        
+
+                                    Ok(users)
+
+                        
+
+                                } else if v.is_array() {
+
+                        
+
+                                    // Backup for cases where it might return a flat array
+
+                        
+
+                                    let users: Vec<SearchUserResult> = serde_json::from_value(v.clone())?;
+
+                        
+
+                                    Ok(users)
+
+                        
+
+                                } else {
+
+                        
+
+                                    Ok(vec![])
+
+                        
+
+                                }
+
+                        
+
+                        
+
+                    }
 
                 }
 
-        
-
-                #[derive(Deserialize)]
-
-                struct SearchResult {
-
-                    pub items: Vec<SearchUserResult>,
-
-                }
-
-        
-
-                let search_result: SearchResult = response.json().await?;
-
-                Ok(search_result.items)
-
-            }
-
-        }
+                
 
         

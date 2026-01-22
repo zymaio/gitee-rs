@@ -8,8 +8,6 @@ pub async fn run_stdio_server(
     enabled_toolsets: Option<String>,
     disabled_toolsets: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    eprintln!("Gitee MCP Server running on stdio");
-    
     let stdin = io::stdin();
     let mut reader = stdin.lock();
     let mut buffer = String::new();
@@ -17,18 +15,16 @@ pub async fn run_stdio_server(
     loop {
         buffer.clear();
         if reader.read_line(&mut buffer)? == 0 {
-            break; // EOF
+            break; 
         }
 
-        let input: Value = match serde_json::from_str(&buffer.trim()) {
+        let line = buffer.trim();
+        if line.is_empty() { continue; }
+
+        let input: Value = match serde_json::from_str(line) {
             Ok(v) => v,
-            Err(_) => {
-                let err_resp = serde_json::json!({
-                    "result": null,
-                    "error": { "code": -32700, "message": "Parse error" },
-                    "id": null,
-                });
-                println!("{}", serde_json::to_string(&err_resp)?);
+            Err(e) => {
+                eprintln!("MCP Parse error: {}", e);
                 continue;
             }
         };
@@ -40,9 +36,9 @@ pub async fn run_stdio_server(
             &disabled_toolsets,
         ).await;
 
-        // Don't send response for notifications (like initialized)
         if response.get("ignore").is_none() {
-            println!("{}", serde_json::to_string(&response)?);
+            let out = serde_json::to_string(&response)?;
+            println!("{}", out);
             io::stdout().flush()?;
         }
     }

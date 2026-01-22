@@ -45,7 +45,8 @@ pub async fn dispatch_tool_call(
         "list_releases" => handle_list_releases(client, arguments).await.map_err(|e| e.to_string()),
 
         // Users
-        "get_user_info" => handle_get_user_info(client, arguments).await.map_err(|e| e.to_string()),
+        "get_user_info" => handle_get_authenticated_user(client).await.map_err(|e| e.to_string()),
+        "get_user_detail" => handle_get_user_info(client, arguments).await.map_err(|e| e.to_string()),
         "search_users" => handle_search_users(client, arguments).await.map_err(|e| e.to_string()),
 
         // Notifications

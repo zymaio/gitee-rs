@@ -1,6 +1,13 @@
 use gitee_rs::GiteeClient;
 use serde_json::{json, Value};
 
+pub async fn handle_get_authenticated_user(client: &GiteeClient) -> Result<Value, String> {
+    match client.get_authenticated_user().await {
+        Ok(user) => Ok(json!({ "user": user })),
+        Err(e) => Err(format!("Failed to get authenticated user info: {}", e)),
+    }
+}
+
 pub async fn handle_get_user_info(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let username = args.get("username").and_then(|v| v.as_str()).ok_or("Missing 'username' parameter")?;
 

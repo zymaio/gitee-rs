@@ -19,13 +19,18 @@ pub async fn handle_rpc_request(
     enabled_toolsets: &Option<String>,
     disabled_toolsets: &Option<String>,
 ) -> Value {
-    let jsonrpc = input.get("jsonrpc").and_then(|v| v.as_str()).unwrap_or("2.0");
     let id = input.get("id").cloned();
-    let method_val = input.get("method").and_then(|v| v.as_str());
+    let method = input.get("method").and_then(|v| v.as_str()).unwrap_or("");
+
+    // Log received method to stderr for debugging in IDE
+    if !method.is_empty() {
+        eprintln!("MCP Received request: method={}, id={:?}", method, id);
+    }
+
     let is_notification = id.is_none();
 
-    let result_value = match method_val {
-        Some("initialize") => {
+    let result_value = match method {
+        "initialize" => {
             json!({
                 "protocolVersion": "2024-11-05",
                 "capabilities": {
@@ -33,14 +38,14 @@ pub async fn handle_rpc_request(
                 },
                 "serverInfo": {
                     "name": "gitee-rs",
-                    "version": "0.9.1"
+                    "version": "0.9.0"
                 }
             })
         }
-        Some("notifications/initialized") => {
+        "notifications/initialized" => {
             return json!({ "ignore": true });
         }
-        Some("tools/list") => {
+        "tools/list" => {
             let mut tools = get_tools_list();
             
             if let Some(enabled) = enabled_toolsets {
@@ -53,16 +58,7 @@ pub async fn handle_rpc_request(
 
             json!({ "tools": tools })
         }
-        Some("ping") => {
-            json!({ "success": true })
-        }
-        Some("endpoints/list") => {
-            json!({
-                "endpoints": ["tools/list", "tools/call", "ping", "endpoints/list"]
-            })
-        }
-        // 关键：必须是 tools/call
-        Some("tools/call") => {
+        "tools/call" => {
             let params = input.get("params").cloned().unwrap_or(json!({}));
             let tool_name = params.get("name").and_then(|v| v.as_str()).unwrap_or("");
             let arguments_default = json!({});
@@ -78,7 +74,7 @@ pub async fn handle_rpc_request(
 
             if !is_enabled {
                 return json!({
-                    "jsonrpc": jsonrpc,
+                    "jsonrpc": "2.0",
                     "id": id,
                     "error": { "code": -1, "message": format!("Tool '{}' is disabled", tool_name) }
                 });
@@ -88,21 +84,24 @@ pub async fn handle_rpc_request(
                 Ok(result) => result,
                 Err(e) => {
                     return json!({
-                        "jsonrpc": jsonrpc,
+                        "jsonrpc": "2.0",
                         "id": id,
                         "error": { "code": -1, "message": e }
                     });
                 }
             }
         }
+        "ping" => {
+            json!({ "success": true })
+        }
         _ => {
             if is_notification {
                 return json!({ "ignore": true });
             }
             return json!({
-                "jsonrpc": jsonrpc,
+                "jsonrpc": "2.0",
                 "id": id,
-                "error": { "code": -32601, "message": format!("Method not found: {:?}", method_val) }
+                "error": { "code": -32601, "message": format!("Method not found: {}", method) }
             });
         }
     };
@@ -111,7 +110,7 @@ pub async fn handle_rpc_request(
         json!({ "ignore": true })
     } else {
         json!({
-            "jsonrpc": jsonrpc,
+            "jsonrpc": "2.0",
             "id": id,
             "result": result_value
         })
