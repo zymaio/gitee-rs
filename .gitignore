@@ -1,0 +1,12 @@
+/target
+**/*.rs.bk
+Cargo.lock
+
+# Secrets
+.env
+**/.env
+*.env.*
+
+# IDE
+.vscode
+.idea

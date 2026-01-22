@@ -1,0 +1,26 @@
+[package]
+name = "gitee-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["fourthz"]
+description = "A powerful command-line interface for Gitee."
+license = "MIT"
+repository = "https://github.com/zymaio/gitee-rs"
+homepage = "https://github.com/zymaio/gitee-rs"
+readme = "README.md"
+keywords = ["gitee", "cli", "git", "automation"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "gitee"
+path = "src/main.rs"
+
+[dependencies]
+gitee-rs = { version = "0.1.0", path = "../gitee-rs" }
+reqwest = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+clap = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }

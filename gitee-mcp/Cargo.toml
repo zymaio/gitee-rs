@@ -1,0 +1,32 @@
+[package]
+name = "gitee-mcp"
+version = "0.1.0"
+edition = "2021"
+authors = ["fourthz"]
+description = "A Model Context Protocol (MCP) server for Gitee, providing AI tool integration."
+license = "MIT"
+repository = "https://github.com/zymaio/gitee-rs"
+homepage = "https://github.com/zymaio/gitee-rs"
+readme = "README.md"
+keywords = ["gitee", "mcp", "ai", "agent", "tool"]
+categories = ["development-tools", "api-bindings"]
+
+[[bin]]
+name = "gitee-mcp"
+path = "src/main.rs"
+
+[dependencies]
+gitee-rs = { version = "0.1.0", path = "../gitee-rs" }
+reqwest = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+clap = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+axum = { version = "0.7", features = ["macros"] }
+tower-http = { version = "0.5", features = ["cors"] }
+futures = "0.3"
+futures-util = "0.3"
+tokio-stream = "0.1"
+uuid = { version = "1.0", features = ["v4"] }
