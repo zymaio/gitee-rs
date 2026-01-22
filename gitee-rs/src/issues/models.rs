@@ -15,8 +15,8 @@ pub struct Issue {
     pub html_url: String,
     #[serde(default)]
     pub api_url: String,
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
     #[serde(default)]
     pub user: Option<User>,
     #[serde(default)]
@@ -45,8 +45,8 @@ pub struct Comment {
     pub body: String,
     #[serde(default)]
     pub user: Option<User>,
-    pub created_at: Option<String>,
-    pub updated_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -56,6 +56,11 @@ pub struct IssueListOptions {
     pub sort: Option<String>,
     pub direction: Option<String>,
     pub since: Option<String>,
+    pub schedule: Option<String>,
+    pub deadline: Option<String>,
+    pub created_at: Option<String>,
+    pub finished_at: Option<String>,
+    pub filter: Option<String>,
     pub page: Option<i32>,
     pub per_page: Option<i32>,
     pub q: Option<String>,

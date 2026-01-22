@@ -37,7 +37,7 @@ pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()
     match cmd {
         FileCommands::Get { owner, repo, path } => {
             println!("Fetching file content for {}/{}/{}...", owner, repo, path);
-            match client.get_file_content(owner, repo, path).await {
+            match client.get_file_content(owner, repo, path, None).await {
                 Ok(file_content) => {
                     println!("File: {} (size: {})", file_content.name, file_content.size);
                     println!("Path: {}", file_content.path);
@@ -56,7 +56,7 @@ pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()
         FileCommands::List { owner, repo, path } => {
             let path_display = path.as_deref().unwrap_or("/");
             println!("Listing files in {}/{}/{}...", owner, repo, path_display);
-            match client.list_repo_files(owner, repo, path.as_deref()).await {
+            match client.list_repo_files(owner, repo, path.as_deref(), None).await {
                 Ok(files) => {
                     if files.is_empty() {
                         println!("No files found.");
@@ -72,7 +72,7 @@ pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()
         FileCommands::Search { query, owner } => {
             let owner_display = owner.as_deref().unwrap_or("(any)");
             println!("Searching files for '{}' in {}...", query, owner_display);
-            match client.search_files_by_content(query, owner.as_deref()).await {
+            match client.search_files_by_content(query, owner.as_deref(), None, None, None).await {
                 Ok(files) => {
                     if files.is_empty() {
                         println!("No files found.");

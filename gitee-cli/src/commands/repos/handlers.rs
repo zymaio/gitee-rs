@@ -4,13 +4,38 @@ use super::{RepoCommands, RepoCommandsExtended};
 
 pub async fn handle_repos(client: &GiteeClient, cmd: &RepoCommands) -> Result<()> {
     match cmd {
+        RepoCommands::List => {
+            println!("Fetching your repositories...");
+            match client.list_user_repos().await {
+                Ok(repos) => {
+                    if repos.is_empty() {
+                        println!("No repositories found.");
+                    } else {
+                        for repo in repos {
+                            println!("{}: {} ({})", repo.owner.login, repo.name, repo.html_url);
+                        }
+                    }
+                }
+                Err(e) => eprintln!("Error fetching repositories: {}", e),
+            }
+        }
         RepoCommands::Info { owner, repo } => {
             println!("Fetching repository info for {}/{}...", owner, repo);
             match client.get_repo(owner, repo).await {
-                Ok(repository) => {
-                    print_repo(&repository);
+                Ok(repo) => {
+                    print_repo(&repo);
                 }
-                Err(e) => eprintln!("Error fetching repository: {}", e),
+                Err(e) => eprintln!("Error fetching repository info: {}", e),
+            }
+        }
+        RepoCommands::Create { name, description, private } => {
+            println!("Creating repository '{}'...", name);
+            match client.create_user_repo(name, description.as_deref(), *private).await {
+                Ok(repo) => {
+                    println!("Successfully created repository:");
+                    print_repo(&repo);
+                }
+                Err(e) => eprintln!("Error creating repository: {}", e),
             }
         }
     }
@@ -19,50 +44,14 @@ pub async fn handle_repos(client: &GiteeClient, cmd: &RepoCommands) -> Result<()
 
 pub async fn handle_repos_ext(client: &GiteeClient, cmd: &RepoCommandsExtended) -> Result<()> {
     match cmd {
-        RepoCommandsExtended::ListUser {} => {
-            println!("Listing user repositories...");
-            match client.list_user_repos().await {
-                Ok(repos) => {
-                    if repos.is_empty() {
-                        println!("No repositories found.");
-                    } else {
-                        for repo in repos {
-                            println!("Repository: {} ({})", repo.name, repo.full_name);
-                            if let Some(description) = &repo.description {
-                                println!("  Description: {}", description);
-                            }
-                            println!("  URL: {}", repo.html_url);
-                            if let Some(created_at) = &repo.created_at {
-                                println!("  Created: {}", created_at);
-                            }
-                            if let Some(updated_at) = &repo.updated_at {
-                                println!("  Updated: {}", updated_at);
-                            }
-                            println!();
-                        }
-                    }
+        RepoCommandsExtended::Fork { owner, repo } => {
+            println!("Forking repository {}/{}...", owner, repo);
+            match client.fork_repository(owner, repo).await {
+                Ok(forked) => {
+                    println!("Successfully forked repository:");
+                    print_repo(&forked);
                 }
-                Err(e) => eprintln!("Error listing user repositories: {}", e),
-            }
-        }
-        RepoCommandsExtended::CreateUser { name, description, private } => {
-            println!("Creating user repository: {}...", name);
-            match client.create_user_repo(name, description.as_deref(), *private).await {
-                Ok(repo) => {
-                    println!("Successfully created repository: {}", repo.name);
-                    print_repo(&repo);
-                }
-                Err(e) => eprintln!("Error creating user repository: {}", e),
-            }
-        }
-        RepoCommandsExtended::CreateOrg { org, name, description, private } => {
-            println!("Creating organization repository {}/{}...", org, name);
-            match client.create_org_repo(org, name, description.as_deref(), *private).await {
-                Ok(repo) => {
-                    println!("Successfully created repository: {}", repo.name);
-                    print_repo(&repo);
-                }
-                Err(e) => eprintln!("Error creating organization repository: {}", e),
+                Err(e) => eprintln!("Error forking repository: {}", e),
             }
         }
     }
@@ -71,19 +60,11 @@ pub async fn handle_repos_ext(client: &GiteeClient, cmd: &RepoCommandsExtended) 
 
 pub fn print_repo(repo: &Repository) {
     println!("Name: {} ({})", repo.name, repo.full_name);
-    if let Some(description) = &repo.description {
-        println!("Description: {}", description);
+    if let Some(desc) = &repo.description {
+        println!("Description: {}", desc);
     }
     println!("URL: {}", repo.html_url);
-    if let Some(clone_url) = &repo.clone_url {
-        println!("Clone URL: {}", clone_url);
-    }
-    if let Some(created_at) = &repo.created_at {
-        println!("Created: {}", created_at);
-    }
-    if let Some(updated_at) = &repo.updated_at {
-        println!("Updated: {}", updated_at);
-    }
+    println!("Created: {}", repo.created_at);
+    println!("Updated: {}", repo.updated_at);
     println!("Owner: {}", repo.owner.login);
-    println!();
 }

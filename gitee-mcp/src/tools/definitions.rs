@@ -6,25 +6,32 @@ pub fn get_tools_list() -> Vec<Tool> {
         // --- Issues ---
         Tool {
             name: "list_repo_issues".to_string(),
-            description: "List repository issues".to_string(),
+            description: "List issues in a repository with filtering and pagination".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
                     "owner": { "type": "string" },
                     "repo": { "type": "string" },
                     "state": { "type": "string", "enum": ["open", "progressing", "closed", "rejected", "all"] },
-                    "labels": { "type": "string" },
+                    "labels": { "type": "string", "description": "Comma-separated labels" },
                     "sort": { "type": "string", "enum": ["created", "updated"] },
                     "direction": { "type": "string", "enum": ["asc", "desc"] },
+                    "since": { "type": "string", "description": "ISO 8601 format" },
+                    "schedule": { "type": "string", "description": "YYYY-MM-DD" },
+                    "deadline": { "type": "string", "description": "YYYY-MM-DD" },
+                    "created_at": { "type": "string", "description": "YYYY-MM-DD" },
+                    "finished_at": { "type": "string", "description": "YYYY-MM-DD" },
+                    "filter": { "type": "string", "enum": ["assigned", "created", "all"] },
                     "page": { "type": "integer" },
-                    "per_page": { "type": "integer" }
+                    "per_page": { "type": "integer" },
+                    "q": { "type": "string" }
                 },
                 "required": ["owner", "repo"]
             }),
         },
         Tool {
             name: "get_repo_issue_detail".to_string(),
-            description: "Get details of a repository issue".to_string(),
+            description: "Get detailed information about a repository issue".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -37,7 +44,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "create_issue".to_string(),
-            description: "Create an issue".to_string(),
+            description: "Create a new issue".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -51,7 +58,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "update_issue".to_string(),
-            description: "Update an issue".to_string(),
+            description: "Update an existing issue".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -67,7 +74,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "comment_issue".to_string(),
-            description: "Comment on an issue".to_string(),
+            description: "Add a comment to an issue".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -96,20 +103,26 @@ pub fn get_tools_list() -> Vec<Tool> {
         // --- Pull Requests ---
         Tool {
             name: "list_repo_pulls".to_string(),
-            description: "List pull requests in a repository".to_string(),
+            description: "List pull requests in a repository with filtering and pagination".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
                     "owner": { "type": "string" },
                     "repo": { "type": "string" },
-                    "state": { "type": "string", "enum": ["open", "closed", "merged", "all"] }
+                    "state": { "type": "string", "enum": ["open", "closed", "merged", "all"] },
+                    "head": { "type": "string" },
+                    "base": { "type": "string" },
+                    "sort": { "type": "string", "enum": ["created", "updated"] },
+                    "direction": { "type": "string", "enum": ["asc", "desc"] },
+                    "page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
                 },
                 "required": ["owner", "repo"]
             }),
         },
         Tool {
             name: "get_pull_detail".to_string(),
-            description: "Get details of a pull request".to_string(),
+            description: "Get detailed information about a pull request".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -122,7 +135,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "create_pull".to_string(),
-            description: "Create a pull request".to_string(),
+            description: "Create a new pull request".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -138,7 +151,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "update_pull".to_string(),
-            description: "Update a pull request".to_string(),
+            description: "Update an existing pull request".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -167,7 +180,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "comment_pull".to_string(),
-            description: "Comment on a pull request".to_string(),
+            description: "Add a comment to a pull request".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -194,7 +207,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "get_diff_files".to_string(),
-            description: "Get a pull request diff files".to_string(),
+            description: "Get the changed files in a pull request".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -209,12 +222,12 @@ pub fn get_tools_list() -> Vec<Tool> {
         // --- Repositories ---
         Tool {
             name: "list_user_repos".to_string(),
-            description: "List user authorized repositories".to_string(),
+            description: "List all repositories accessible to the authenticated user".to_string(),
             input_schema: json!({ "type": "object", "properties": {} }),
         },
         Tool {
             name: "get_repo".to_string(),
-            description: "Get information about a repository".to_string(),
+            description: "Get detailed information about a repository".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -226,7 +239,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "create_user_repo".to_string(),
-            description: "Create a user repository".to_string(),
+            description: "Create a new personal repository".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -239,7 +252,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "create_org_repo".to_string(),
-            description: "Create an organization repository".to_string(),
+            description: "Create a new repository in an organization".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -253,7 +266,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "create_enterprise_repo".to_string(),
-            description: "Create an enterprise repository".to_string(),
+            description: "Create a new repository in an enterprise".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -279,7 +292,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "search_open_source_repositories".to_string(),
-            description: "Search open source repositories on Gitee".to_string(),
+            description: "Search for public repositories on Gitee".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -305,7 +318,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         },
         Tool {
             name: "list_releases".to_string(),
-            description: "List repository releases".to_string(),
+            description: "List releases in a repository".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -319,12 +332,12 @@ pub fn get_tools_list() -> Vec<Tool> {
         // --- Users ---
         Tool {
             name: "get_user_info".to_string(),
-            description: "Get current authenticated user information".to_string(),
+            description: "Get authenticated user profile".to_string(),
             input_schema: json!({ "type": "object", "properties": {} }),
         },
         Tool {
             name: "get_user_detail".to_string(),
-            description: "Get information about a specific user by username".to_string(),
+            description: "Get detailed information about a user".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
@@ -348,7 +361,7 @@ pub fn get_tools_list() -> Vec<Tool> {
         // --- Notifications ---
         Tool {
             name: "list_user_notifications".to_string(),
-            description: "List user notifications".to_string(),
+            description: "List notifications for the authenticated user".to_string(),
             input_schema: json!({ "type": "object", "properties": {} }),
         },
 
@@ -361,27 +374,32 @@ pub fn get_tools_list() -> Vec<Tool> {
                 "properties": {
                     "owner": { "type": "string" },
                     "repo": { "type": "string" },
-                    "path": { "type": "string" }
+                    "path": { "type": "string" },
+                    "ref": { "type": "string" }
                 },
                 "required": ["owner", "repo", "path"]
             }),
         },
         Tool {
             name: "search_files_by_content".to_string(),
-            description: "Search files by Content".to_string(),
+            description: "Search for code across repositories".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {
-                    "q": { "type": "string" }
+                    "q": { "type": "string" },
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
                 },
                 "required": ["q"]
             }),
         },
 
-        // --- Labels (Extras) ---
+        // --- Labels ---
         Tool {
             name: "list_labels".to_string(),
-            description: "List labels in a repository".to_string(),
+            description: "List all labels in a repository".to_string(),
             input_schema: json!({
                 "type": "object",
                 "properties": {

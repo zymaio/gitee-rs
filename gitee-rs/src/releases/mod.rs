@@ -1,8 +1,21 @@
-use crate::{error::GiteeError, GiteeClient, repos::Repository};
+use crate::{error::GiteeError, GiteeClient};
 use reqwest::Method;
+use serde::{Deserialize, Serialize};
+use crate::utils::deserialize_string_or_int;
 
-mod models;
-pub use models::*;
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Release {
+    #[serde(deserialize_with = "deserialize_string_or_int")]
+    pub id: String,
+    pub tag_name: String,
+    pub target_commitish: String,
+    pub name: String,
+    pub body: Option<String>,
+    pub draft: bool,
+    pub prerelease: bool,
+    pub created_at: String,
+    pub published_at: String,
+}
 
 impl GiteeClient {
     /// Create a release
@@ -10,10 +23,10 @@ impl GiteeClient {
         let url = format!("{}/repos/{}/{}/releases", self.base_url(), owner, repo);
 
         let mut payload = std::collections::HashMap::new();
-        payload.insert("tag_name", tag_name);
-        payload.insert("name", name);
-        if let Some(b) = body {
-            payload.insert("body", b);
+        payload.insert("tag_name", tag_name.to_string());
+        payload.insert("name", name.to_string());
+        if let Some(body) = body {
+            payload.insert("body", body.to_string());
         }
 
         let response = self
@@ -38,7 +51,6 @@ impl GiteeClient {
     /// List releases
     pub async fn list_releases(&self, owner: &str, repo: &str) -> Result<Vec<Release>, GiteeError> {
         let url = format!("{}/repos/{}/{}/releases", self.base_url(), owner, repo);
-
         let response = self
             .client()
             .request(Method::GET, &url)
@@ -55,52 +67,5 @@ impl GiteeClient {
 
         let releases: Vec<Release> = response.json().await?;
         Ok(releases)
-    }
-
-    /// Fork a repository
-    pub async fn fork_repository(&self, owner: &str, repo: &str) -> Result<Repository, GiteeError> {
-        let url = format!("{}/repos/{}/{}/forks", self.base_url(), owner, repo);
-
-        let response = self
-            .client()
-            .request(Method::POST, &url)
-            .header("Authorization", self.auth_header())
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            return Err(GiteeError::ApiError(format!(
-                "Failed to fork repository: {}",
-                response.status()
-            )));
-        }
-
-        let forked_repo: Repository = response.json().await?;
-        Ok(forked_repo)
-    }
-
-    /// Search repositories
-    pub async fn search_repositories(&self, query: &str) -> Result<Vec<Repository>, GiteeError> {
-        let url = format!("{}/search/repositories", self.base_url());
-
-        let params = [("q", query), ("per_page", "30")];
-
-        let response = self
-            .client()
-            .request(Method::GET, &url)
-            .header("Authorization", self.auth_header())
-            .query(&params)
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            return Err(GiteeError::ApiError(format!(
-                "Failed to search repositories: {}",
-                response.status()
-            )));
-        }
-
-        let repos: Vec<Repository> = response.json().await?;
-        Ok(repos)
     }
 }

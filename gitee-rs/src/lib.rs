@@ -23,7 +23,7 @@ pub use crate::pulls::{PullRequest, BranchRef, FileDiff, Comment as PullComment}
 pub use crate::labels::Label;
 pub use crate::files::{FileContent, RepoFile};
 pub use crate::notifications::{Notification, NotificationSubject};
-pub use crate::releases::{Release, Asset};
+pub use crate::releases::{Release};
 
 /// Gitee API Client
 pub struct GiteeClient {

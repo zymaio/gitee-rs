@@ -66,6 +66,8 @@ pub struct PullListOptions {
     pub base: Option<String>,
     pub sort: Option<String>,
     pub direction: Option<String>,
+    pub milestone_number: Option<i32>,
+    pub labels: Option<String>,
     pub page: Option<i32>,
     pub per_page: Option<i32>,
 }

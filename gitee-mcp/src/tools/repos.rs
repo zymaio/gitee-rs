@@ -14,11 +14,11 @@ pub async fn handle_get_repo(client: &GiteeClient, args: &Value) -> Result<Value
 pub async fn handle_create_user_repo(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let name = args.get("name").and_then(|v| v.as_str()).ok_or("Missing 'name' parameter")?;
     let description = args.get("description").and_then(|v| v.as_str());
-    let private = args.get("private").and_then(|v| v.as_bool()).unwrap_or(false);
+    let private = args.get("private").and_then(|v| v.as_bool()).unwrap_or(true);
 
     match client.create_user_repo(name, description, private).await {
         Ok(repo) => Ok(json!({ "repository": repo })),
-        Err(e) => Err(format!("Failed to create user repository: {}", e)),
+        Err(e) => Err(format!("Failed to create repository: {}", e)),
     }
 }
 
@@ -26,7 +26,7 @@ pub async fn handle_create_org_repo(client: &GiteeClient, args: &Value) -> Resul
     let org = args.get("org").and_then(|v| v.as_str()).ok_or("Missing 'org' parameter")?;
     let name = args.get("name").and_then(|v| v.as_str()).ok_or("Missing 'name' parameter")?;
     let description = args.get("description").and_then(|v| v.as_str());
-    let private = args.get("private").and_then(|v| v.as_bool()).unwrap_or(false);
+    let private = args.get("private").and_then(|v| v.as_bool()).unwrap_or(true);
 
     match client.create_org_repo(org, name, description, private).await {
         Ok(repo) => Ok(json!({ "repository": repo })),
@@ -49,7 +49,29 @@ pub async fn handle_create_enterprise_repo(client: &GiteeClient, args: &Value) -
 pub async fn handle_list_user_repos(client: &GiteeClient) -> Result<Value, String> {
     match client.list_user_repos().await {
         Ok(repos) => Ok(json!({ "repositories": repos })),
-        Err(e) => Err(format!("Failed to list user repositories: {}", e)),
+        Err(e) => Err(format!("Failed to list repositories: {}", e)),
+    }
+}
+
+pub async fn handle_fork_repository(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
+    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
+
+    match client.fork_repository(owner, repo).await {
+        Ok(repo) => Ok(json!({ "repository": repo })),
+        Err(e) => Err(format!("Failed to fork repository: {}", e)),
+    }
+}
+
+pub async fn handle_search_repositories(client: &GiteeClient, args: &Value) -> Result<Value, String> {
+    let query = args.get("q").and_then(|v| v.as_str()).ok_or("Missing 'q' parameter")?;
+    let from = args.get("from").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let size = args.get("size").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let sort = args.get("sort_by_f").and_then(|v| v.as_str());
+
+    match client.search_repositories(query, from, size, sort).await {
+        Ok(repos) => Ok(json!({ "repositories": repos })),
+        Err(e) => Err(format!("Failed to search repositories: {}", e)),
     }
 }
 
@@ -73,24 +95,5 @@ pub async fn handle_list_releases(client: &GiteeClient, args: &Value) -> Result<
     match client.list_releases(owner, repo).await {
         Ok(releases) => Ok(json!({ "releases": releases })),
         Err(e) => Err(format!("Failed to list releases: {}", e)),
-    }
-}
-
-pub async fn handle_fork_repository(client: &GiteeClient, args: &Value) -> Result<Value, String> {
-    let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;
-    let repo = args.get("repo").and_then(|v| v.as_str()).ok_or("Missing 'repo' parameter")?;
-
-    match client.fork_repository(owner, repo).await {
-        Ok(repo) => Ok(json!({ "repository": repo })),
-        Err(e) => Err(format!("Failed to fork repository: {}", e)),
-    }
-}
-
-pub async fn handle_search_repositories(client: &GiteeClient, args: &Value) -> Result<Value, String> {
-    let query = args.get("q").and_then(|v| v.as_str()).ok_or("Missing 'q' parameter")?;
-
-    match client.search_repositories(query).await {
-        Ok(repos) => Ok(json!({ "repositories": repos })),
-        Err(e) => Err(format!("Failed to search repositories: {}", e)),
     }
 }

@@ -12,6 +12,8 @@ pub async fn handle_list_pulls(client: &GiteeClient, args: &Value) -> Result<Val
         base: args.get("base").and_then(|v| v.as_str()).map(|s| s.to_string()),
         sort: args.get("sort").and_then(|v| v.as_str()).map(|s| s.to_string()),
         direction: args.get("direction").and_then(|v| v.as_str()).map(|s| s.to_string()),
+        milestone_number: args.get("milestone_number").and_then(|v| v.as_i64()).map(|v| v as i32),
+        labels: args.get("labels").and_then(|v| v.as_str()).map(|s| s.to_string()),
         page: args.get("page").and_then(|v| v.as_i64()).map(|v| v as i32),
         per_page: args.get("per_page").and_then(|v| v.as_i64()).map(|v| v as i32),
     };
