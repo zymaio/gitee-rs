@@ -3,14 +3,14 @@ name: Release
 on:
   push:
     tags:
-      - 'v*' # 当推送 v0.1.0 这种标签时触发
+      - 'v*'
 
 permissions:
-  contents: write # 必须显式允许写入权限以创建 Release
+  contents: write
 
 jobs:
-  publish:
-    name: Publish for ${{ matrix.os }}
+  build:
+    name: Build for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -18,15 +18,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: gitee
             mcp_name: gitee-mcp
-            asset_name: gitee-rs-linux-amd64
+            asset_name: gitee-rs-linux-amd64.tar.gz
           - os: windows-latest
             artifact_name: gitee.exe
             mcp_name: gitee-mcp.exe
-            asset_name: gitee-rs-windows-amd64
+            asset_name: gitee-rs-windows-amd64.zip
           - os: macos-latest
             artifact_name: gitee
             mcp_name: gitee-mcp
-            asset_name: gitee-rs-macos-amd64
+            asset_name: gitee-rs-macos-amd64.tar.gz
 
     steps:
       - uses: actions/checkout@v4
@@ -41,21 +41,39 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           cd target/release
-          tar -czf ../../${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }} ${{ matrix.mcp_name }}
-          cd ../..
+          tar -czf ../../${{ matrix.asset_name }} ${{ matrix.artifact_name }} ${{ matrix.mcp_name }}
 
       - name: Package (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           cd target/release
-          7z a ../../${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }} ${{ matrix.mcp_name }}
-          cd ../..
+          7z a ../../${{ matrix.asset_name }} ${{ matrix.artifact_name }} ${{ matrix.mcp_name }}
 
-      - name: Upload Release Assets
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.asset_name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          pattern: gitee-rs-*
+
+      - name: Flatten directory structure
+        run: |
+          mkdir ./release_assets
+          find ./artifacts -type f -name "gitee-rs-*" -exec cp {} ./release_assets/ \;
+
+      - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            gitee-rs-*.tar.gz
-            gitee-rs-*.zip
+          files: release_assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
