@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # 当推送 v0.1.0 这种标签时触发
 
+permissions:
+  contents: write # 必须显式允许写入权限以创建 Release
+
 jobs:
   publish:
     name: Publish for ${{ matrix.os }}
