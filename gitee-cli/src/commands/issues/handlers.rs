@@ -4,19 +4,35 @@ use super::{IssueCommands, IssueCommandsExtended};
 
 pub async fn handle_issues(client: &GiteeClient, cmd: &IssueCommands) -> Result<()> {
     match cmd {
-        IssueCommands::List => {
-            println!("Fetching issues...");
-            match client.list_issues(None).await {
-                Ok(issues) => {
-                    if issues.is_empty() {
-                        println!("No issues found.");
-                    } else {
-                        for issue in issues {
-                            print_issue(&issue);
+        IssueCommands::List { owner, repo } => {
+            if let (Some(o), Some(r)) = (owner, repo) {
+                println!("Fetching issues for {}/{}...", o, r);
+                match client.list_repo_issues(o, r, None).await {
+                    Ok(issues) => {
+                        if issues.is_empty() {
+                            println!("No issues found in this repository.");
+                        } else {
+                            for issue in issues {
+                                print_issue(&issue);
+                            }
                         }
                     }
+                    Err(e) => eprintln!("Error fetching repo issues: {}", e),
                 }
-                Err(e) => eprintln!("Error fetching issues: {}", e),
+            } else {
+                println!("Fetching your issues across all repositories...");
+                match client.list_issues(None).await {
+                    Ok(issues) => {
+                        if issues.is_empty() {
+                            println!("No issues found.");
+                        } else {
+                            for issue in issues {
+                                print_issue(&issue);
+                            }
+                        }
+                    }
+                    Err(e) => eprintln!("Error fetching issues: {}", e),
+                }
             }
         }
         IssueCommands::Create { owner, repo, title, body } => {
@@ -94,6 +110,16 @@ pub async fn handle_issues_ext(client: &GiteeClient, cmd: &IssueCommandsExtended
                 }
                 Err(e) => eprintln!("Error listing issue comments: {}", e),
             }
+        }
+        IssueCommandsExtended::MilestoneList { owner, repo, state } => {
+            let milestones = client.list_repo_milestones(owner, repo, state.as_deref()).await?;
+            for milestone in milestones {
+                println!("{}: {} [{}]", milestone.id, milestone.title, milestone.state);
+            }
+        }
+        IssueCommandsExtended::MilestoneCreate { owner, repo, title, description, due_on } => {
+            let milestone = client.create_milestone(owner, repo, title, description.as_deref(), due_on.as_deref()).await?;
+            println!("Milestone '{}' created.", milestone.title);
         }
     }
     Ok(())

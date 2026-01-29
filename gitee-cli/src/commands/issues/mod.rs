@@ -6,7 +6,12 @@ pub use handlers::*;
 #[derive(Subcommand)]
 pub enum IssueCommands {
     /// List all issues
-    List,
+    List {
+        /// Owner of the repository (optional, if provided lists repo issues)
+        owner: Option<String>,
+        /// Name of the repository (optional)
+        repo: Option<String>,
+    },
     /// Create a new issue
     Create {
         /// Owner of the repository
@@ -78,5 +83,22 @@ pub enum IssueCommandsExtended {
         repo: String,
         /// Issue number
         number: String,
+    },
+    /// List milestones
+    MilestoneList {
+        owner: String,
+        repo: String,
+        #[arg(long)]
+        state: Option<String>,
+    },
+    /// Create a milestone
+    MilestoneCreate {
+        owner: String,
+        repo: String,
+        title: String,
+        #[arg(long)]
+        description: Option<String>,
+        #[arg(long)]
+        due_on: Option<String>,
     },
 }

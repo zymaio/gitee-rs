@@ -14,6 +14,7 @@ use crate::commands::notifications::handle_notifications;
 use crate::commands::files::handle_files;
 use crate::commands::releases::handle_releases;
 use crate::commands::labels::handle_labels;
+use crate::commands::wikis::handle_wikis;
 
 #[derive(Parser)]
 #[command(author, version, about = "Gitee CLI - Manage issues, PRs, repos and more", long_about = None)]
@@ -82,6 +83,11 @@ enum Commands {
     Releases {
         #[command(subcommand)]
         cmd: crate::commands::releases::ReleaseCommands,
+    },
+    /// Manage Wiki (Wiki 管理)
+    Wiki {
+        #[command(subcommand)]
+        cmd: crate::commands::wikis::WikiCommands,
     }
 }
 
@@ -104,6 +110,7 @@ async fn main() -> Result<()> {
         Commands::Notifications { cmd } => handle_notifications(&client, cmd).await?,
         Commands::Files { cmd } => handle_files(&client, cmd).await?,
         Commands::Releases { cmd } => handle_releases(&client, cmd).await?,
+        Commands::Wiki { cmd } => handle_wikis(&client, cmd).await?,
     }
 
     Ok(())

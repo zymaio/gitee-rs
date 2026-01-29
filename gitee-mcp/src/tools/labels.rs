@@ -1,5 +1,67 @@
 use gitee_rs::GiteeClient;
 use serde_json::{json, Value};
+use crate::Tool;
+
+pub fn get_tool_definitions() -> Vec<Tool> {
+    vec![
+        Tool {
+            name: "list_labels".to_string(),
+            description: "List all labels in a repository".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" }
+                },
+                "required": ["owner", "repo"]
+            }),
+        },
+        Tool {
+            name: "create_label".to_string(),
+            description: "Create a new label".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "name": { "type": "string" },
+                    "color": { "type": "string" },
+                    "description": { "type": "string" }
+                },
+                "required": ["owner", "repo", "name", "color"]
+            }),
+        },
+        Tool {
+            name: "update_label".to_string(),
+            description: "Update a label".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "name": { "type": "string" },
+                    "new_name": { "type": "string" },
+                    "color": { "type": "string" },
+                    "description": { "type": "string" }
+                },
+                "required": ["owner", "repo", "name"]
+            }),
+        },
+        Tool {
+            name: "delete_label".to_string(),
+            description: "Delete a label".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "name": { "type": "string" }
+                },
+                "required": ["owner", "repo", "name"]
+            }),
+        },
+    ]
+}
 
 pub async fn handle_list_labels(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;

@@ -5,13 +5,10 @@ mod tools;
 mod server;
 mod l10n;
 
+use gitee_mcp::Tool;
 use gitee_rs::GiteeClient;
-use serde::Serialize;
-use serde_json::Value;
 use clap::Parser;
-
 use std::fs;
-
 use crate::server::stdio::run_stdio_server;
 use crate::server::sse::run_sse_server;
 use crate::l10n::L10n;
@@ -74,13 +71,6 @@ enum Commands {
     }
 }
 
-#[derive(Serialize, Debug)]
-pub struct Tool {
-    pub name: String,
-    pub description: String,
-    pub input_schema: Value,
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
@@ -131,7 +121,6 @@ fn handle_install(l10n: &L10n, ide: &str, server_name: &str, token: Option<&str>
         fs::write(format!("{}_cursor_config.json", server_name), serde_json::to_string_pretty(&config)?)?;
     }
     
-    // ... 其他 IDE 逻辑类似 ...
     println!("{}", l10n.translate("Config generated.", "配置已生成。"));
     Ok(())
 }

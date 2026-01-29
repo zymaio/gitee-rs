@@ -1,5 +1,16 @@
 use gitee_rs::GiteeClient;
 use serde_json::{json, Value};
+use crate::Tool;
+
+pub fn get_tool_definitions() -> Vec<Tool> {
+    vec![
+        Tool {
+            name: "list_user_notifications".to_string(),
+            description: "List notifications for the authenticated user".to_string(),
+            input_schema: json!({ "type": "object", "properties": {} }),
+        },
+    ]
+}
 
 pub async fn handle_list_notifications(client: &GiteeClient) -> Result<Value, String> {
     match client.list_user_notifications().await {

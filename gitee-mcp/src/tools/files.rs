@@ -1,5 +1,54 @@
 use gitee_rs::GiteeClient;
 use serde_json::{json, Value};
+use crate::Tool;
+
+pub fn get_tool_definitions() -> Vec<Tool> {
+    vec![
+        Tool {
+            name: "get_file_content".to_string(),
+            description: "Get the content of a file in a repository".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "path": { "type": "string" },
+                    "ref": { "type": "string" }
+                },
+                "required": ["owner", "repo", "path"]
+            }),
+        },
+        Tool {
+            name: "list_repo_files".to_string(),
+            description: "List files in a repository directory".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "path": { "type": "string" },
+                    "ref": { "type": "string" }
+                },
+                "required": ["owner", "repo"]
+            }),
+        },
+        Tool {
+            name: "search_files_by_content".to_string(),
+            description: "Search for code across repositories".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "q": { "type": "string" },
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
+                },
+                "required": ["q"]
+            }),
+        },
+    ]
+}
 
 pub async fn handle_get_file_content(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;

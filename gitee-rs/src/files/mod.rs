@@ -1,39 +1,9 @@
-use crate::{error::GiteeError, GiteeClient, utils::deserialize_string_or_int};
+use crate::{error::GiteeError, GiteeClient};
 use reqwest::Method;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct FileContent {
-    pub name: String,
-    pub path: String,
-    #[serde(deserialize_with = "deserialize_string_or_int")]
-    pub sha: String,  // Gitee API may return string or integer IDs
-    pub size: i32,
-    pub url: String,
-    pub html_url: String,
-    pub git_url: String,
-    pub download_url: String,
-    #[serde(rename = "type")]
-    pub file_type: String, // "file", "dir"
-    pub content: Option<String>,
-    #[serde(default)]
-    pub encoding: Option<String>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct RepoFile {
-    pub name: String,
-    pub path: String,
-    #[serde(deserialize_with = "deserialize_string_or_int")]
-    pub sha: String,  // Gitee API may return string or integer IDs
-    pub size: i32,
-    pub url: String,
-    pub html_url: String,
-    pub git_url: String,
-    pub download_url: String,
-    #[serde(rename = "type")]
-    pub file_type: String, // "file", "dir"
-}
+mod models;
+pub use models::*;
 
 impl GiteeClient {
     /// Get file content

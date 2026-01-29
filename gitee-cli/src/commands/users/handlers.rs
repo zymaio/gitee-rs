@@ -1,20 +1,6 @@
-use clap::Subcommand;
 use gitee_rs::GiteeClient;
 use anyhow::Result;
-
-#[derive(Subcommand)]
-pub enum UserCommands {
-    /// Get user information (default: current authenticated user)
-    Info {
-        /// Username to fetch (optional)
-        username: Option<String>,
-    },
-    /// Search users
-    Search {
-        /// Query to search for
-        query: String,
-    },
-}
+use super::UserCommands;
 
 pub async fn handle_users(client: &GiteeClient, cmd: &UserCommands) -> Result<()> {
     match cmd {

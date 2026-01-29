@@ -21,19 +21,47 @@ pub enum RepoCommands {
         /// Repository description (optional)
         #[arg(long)]
         description: Option<String>,
-        /// Whether the repository is private (default: true)
-        #[arg(long, default_value = "true")]
+        /// Whether the repository is private
+        #[arg(long)]
         private: bool,
-    }
-}
-
-#[derive(Subcommand)]
-pub enum RepoCommandsExtended {
-    /// Fork a repository
-    Fork {
+    },
+    /// Delete a repository
+    Delete {
         /// Owner of the repository
         owner: String,
         /// Name of the repository
         repo: String,
     }
 }
+
+#[derive(Subcommand)]
+pub enum RepoCommandsExtended {
+    /// Fork a repository
+        Fork {
+            /// Owner of the repository
+            owner: String,
+            /// Name of the repository
+            repo: String,
+        },
+        /// Star a repository
+        Star {
+            owner: String,
+            repo: String,
+        },
+        /// Unstar a repository
+        Unstar {
+            owner: String,
+            repo: String,
+        },
+        /// Watch a repository
+        Watch {
+            owner: String,
+            repo: String,
+        },
+        /// Unwatch a repository
+        Unwatch {
+            owner: String,
+            repo: String,
+        }
+    }
+    

@@ -5,6 +5,7 @@ pub mod repos;
 pub mod users;
 pub mod notifications;
 pub mod files;
+pub mod wikis;
 pub mod definitions;
 pub mod dispatcher;
 

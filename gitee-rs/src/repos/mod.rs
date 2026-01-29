@@ -236,4 +236,107 @@ impl GiteeClient {
             Ok(vec![])
         }
     }
+
+    /// Delete a repository
+    pub async fn delete_repo(&self, owner: &str, repo: &str) -> Result<(), GiteeError> {
+        let url = format!("{}/repos/{}/{}", self.base_url(), owner, repo);
+        let response = self
+            .client()
+            .request(Method::DELETE, &url)
+            .header("Authorization", self.auth_header())
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to delete repository: {}",
+                response.status()
+            )));
+        }
+
+        Ok(())
+    }
+
+    /// Star a repository
+    pub async fn star_repo(&self, owner: &str, repo: &str) -> Result<(), GiteeError> {
+        let url = format!("{}/user/starred/{}/{}", self.base_url(), owner, repo);
+        let response = self
+            .client()
+            .request(Method::PUT, &url)
+            .header("Authorization", self.auth_header())
+            .header("Content-Length", 0)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to star repository: {}",
+                response.status()
+            )));
+        }
+
+        Ok(())
+    }
+
+    /// Unstar a repository
+    pub async fn unstar_repo(&self, owner: &str, repo: &str) -> Result<(), GiteeError> {
+        let url = format!("{}/user/starred/{}/{}", self.base_url(), owner, repo);
+        let response = self
+            .client()
+            .request(Method::DELETE, &url)
+            .header("Authorization", self.auth_header())
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to unstar repository: {}",
+                response.status()
+            )));
+        }
+
+        Ok(())
+    }
+
+    /// Watch a repository
+    pub async fn watch_repo(&self, owner: &str, repo: &str) -> Result<(), GiteeError> {
+        let url = format!("{}/user/subscriptions/{}/{}", self.base_url(), owner, repo);
+        
+        let response = self
+            .client()
+            .request(Method::PUT, &url)
+            .header("Authorization", self.auth_header())
+            .header("Content-Length", 0)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to watch repository: {}",
+                response.status()
+            )));
+        }
+
+        Ok(())
+    }
+
+    /// Unwatch a repository
+    pub async fn unwatch_repo(&self, owner: &str, repo: &str) -> Result<(), GiteeError> {
+        let url = format!("{}/user/subscriptions/{}/{}", self.base_url(), owner, repo);
+        let response = self
+            .client()
+            .request(Method::DELETE, &url)
+            .header("Authorization", self.auth_header())
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(GiteeError::ApiError(format!(
+                "Failed to unwatch repository: {}",
+                response.status()
+            )));
+        }
+
+        Ok(())
+    }
 }

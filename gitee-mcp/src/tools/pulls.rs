@@ -1,6 +1,129 @@
 use gitee_rs::GiteeClient;
 use gitee_rs::pulls::PullListOptions;
 use serde_json::{json, Value};
+use crate::Tool;
+
+pub fn get_tool_definitions() -> Vec<Tool> {
+    vec![
+        Tool {
+            name: "list_repo_pulls".to_string(),
+            description: "List pull requests in a repository with filtering and pagination".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "state": { "type": "string", "enum": ["open", "closed", "merged", "all"] },
+                    "head": { "type": "string" },
+                    "base": { "type": "string" },
+                    "sort": { "type": "string", "enum": ["created", "updated"] },
+                    "direction": { "type": "string", "enum": ["asc", "desc"] },
+                    "page": { "type": "integer" },
+                    "per_page": { "type": "integer" }
+                },
+                "required": ["owner", "repo"]
+            }),
+        },
+        Tool {
+            name: "get_pull_detail".to_string(),
+            description: "Get detailed information about a pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" }
+                },
+                "required": ["owner", "repo", "number"]
+            }),
+        },
+        Tool {
+            name: "create_pull".to_string(),
+            description: "Create a new pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "title": { "type": "string" },
+                    "head": { "type": "string" },
+                    "base": { "type": "string" },
+                    "body": { "type": "string" }
+                },
+                "required": ["owner", "repo", "title", "head", "base"]
+            }),
+        },
+        Tool {
+            name: "update_pull".to_string(),
+            description: "Update an existing pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" },
+                    "title": { "type": "string" },
+                    "body": { "type": "string" },
+                    "state": { "type": "string", "enum": ["open", "closed"] }
+                },
+                "required": ["owner", "repo", "number"]
+            }),
+        },
+        Tool {
+            name: "merge_pull".to_string(),
+            description: "Merge a pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" }
+                },
+                "required": ["owner", "repo", "number"]
+            }),
+        },
+        Tool {
+            name: "comment_pull".to_string(),
+            description: "Add a comment to a pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" },
+                    "body": { "type": "string" }
+                },
+                "required": ["owner", "repo", "number", "body"]
+            }),
+        },
+        Tool {
+            name: "list_pull_comments".to_string(),
+            description: "List all comments for a pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" }
+                },
+                "required": ["owner", "repo", "number"]
+            }),
+        },
+        Tool {
+            name: "get_diff_files".to_string(),
+            description: "Get the changed files in a pull request".to_string(),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "owner": { "type": "string" },
+                    "repo": { "type": "string" },
+                    "number": { "type": "string" }
+                },
+                "required": ["owner", "repo", "number"]
+            }),
+        },
+    ]
+}
 
 pub async fn handle_list_pulls(client: &GiteeClient, args: &Value) -> Result<Value, String> {
     let owner = args.get("owner").and_then(|v| v.as_str()).ok_or("Missing 'owner' parameter")?;

@@ -10,6 +10,7 @@ pub mod labels;
 pub mod files;
 pub mod notifications;
 pub mod releases;
+pub mod wikis;
 pub(crate) mod utils;
 
 use reqwest::Client;
@@ -24,6 +25,7 @@ pub use crate::labels::Label;
 pub use crate::files::{FileContent, RepoFile};
 pub use crate::notifications::{Notification};
 pub use crate::releases::{Release};
+pub use crate::wikis::{WikiPage};
 
 /// Gitee API Client
 pub struct GiteeClient {
@@ -166,5 +168,19 @@ mod tests {
         let issue: Issue = serde_json::from_value(issue_json).unwrap();
         assert_eq!(issue.id, "123");
         assert_eq!(issue.number, "I6TABC");
+    }
+
+    #[test]
+    fn test_milestone_structure_deserialization() {
+        let milestone_json = json!({
+            "id": 456,
+            "title": "v1.0",
+            "description": "First release",
+            "state": "open"
+        });
+
+        let milestone: Milestone = serde_json::from_value(milestone_json).unwrap();
+        assert_eq!(milestone.id, "456");
+        assert_eq!(milestone.title, "v1.0");
     }
 }

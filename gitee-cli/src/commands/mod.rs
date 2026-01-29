@@ -6,3 +6,4 @@ pub mod users;
 pub mod notifications;
 pub mod files;
 pub mod releases;
+pub mod wikis;

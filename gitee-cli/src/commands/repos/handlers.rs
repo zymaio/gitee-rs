@@ -38,6 +38,13 @@ pub async fn handle_repos(client: &GiteeClient, cmd: &RepoCommands) -> Result<()
                 Err(e) => eprintln!("Error creating repository: {}", e),
             }
         }
+        RepoCommands::Delete { owner, repo } => {
+            println!("Deleting repository {}/{}...", owner, repo);
+            match client.delete_repo(owner, repo).await {
+                Ok(_) => println!("Successfully deleted repository."),
+                Err(e) => eprintln!("Error deleting repository: {}", e),
+            }
+        }
     }
     Ok(())
 }
@@ -54,6 +61,26 @@ pub async fn handle_repos_ext(client: &GiteeClient, cmd: &RepoCommandsExtended) 
                 Err(e) => eprintln!("Error forking repository: {}", e),
             }
         }
+        RepoCommandsExtended::Star { owner, repo } => {
+            println!("Starring repository {}/{}...", owner, repo);
+            client.star_repo(owner, repo).await?;
+            println!("Successfully starred repository.");
+        }
+        RepoCommandsExtended::Unstar { owner, repo } => {
+            println!("Unstarring repository {}/{}...", owner, repo);
+            client.unstar_repo(owner, repo).await?;
+            println!("Successfully unstarred repository.");
+        }
+        RepoCommandsExtended::Watch { owner, repo } => {
+            println!("Watching repository {}/{}...", owner, repo);
+            client.watch_repo(owner, repo).await?;
+            println!("Successfully watching repository.");
+        }
+        RepoCommandsExtended::Unwatch { owner, repo } => {
+            println!("Unwatching repository {}/{}...", owner, repo);
+            client.unwatch_repo(owner, repo).await?;
+            println!("Successfully unwatched repository.");
+        }
     }
     Ok(())
 }
@@ -67,4 +94,5 @@ pub fn print_repo(repo: &Repository) {
     println!("Created: {}", repo.created_at);
     println!("Updated: {}", repo.updated_at);
     println!("Owner: {}", repo.owner.login);
+    println!("Has Issues: {}, Has Wiki: {}, Has Pages: {}", repo.has_issues, repo.has_wiki, repo.has_pages);
 }

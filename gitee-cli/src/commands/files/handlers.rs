@@ -1,37 +1,6 @@
-use clap::Subcommand;
 use gitee_rs::GiteeClient;
 use anyhow::Result;
-
-#[derive(Subcommand)]
-pub enum FileCommands {
-    /// Get file content
-    Get {
-        /// Owner of the repository
-        owner: String,
-        /// Name of the repository
-        repo: String,
-        /// Path to the file
-        path: String,
-    },
-    /// List repository files
-    List {
-        /// Owner of the repository
-        owner: String,
-        /// Name of the repository
-        repo: String,
-        /// Path to list files from (optional)
-        #[arg(long)]
-        path: Option<String>,
-    },
-    /// Search files by content
-    Search {
-        /// Query to search for
-        query: String,
-        /// Owner to search in (optional)
-        #[arg(long)]
-        owner: Option<String>,
-    },
-}
+use super::FileCommands;
 
 pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()> {
     match cmd {
@@ -39,7 +8,7 @@ pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()
             println!("Fetching file content for {}/{}/{}...", owner, repo, path);
             match client.get_file_content(owner, repo, path, None).await {
                 Ok(file_content) => {
-                    println!("File: {} (size: {})", file_content.name, file_content.size);
+                    println!("File: {} (size: {})", file_content.name, file_content.size.unwrap_or(0));
                     println!("Path: {}", file_content.path);
                     println!("Type: {}", file_content.file_type);
                     if let Some(content) = &file_content.content {
@@ -62,7 +31,7 @@ pub async fn handle_files(client: &GiteeClient, cmd: &FileCommands) -> Result<()
                         println!("No files found.");
                     } else {
                         for file in files {
-                            println!("{}: {} (size: {})", file.file_type, file.name, file.size);
+                            println!("{}: {} (size: {})", file.file_type, file.name, file.size.unwrap_or(0));
                         }
                     }
                 }
